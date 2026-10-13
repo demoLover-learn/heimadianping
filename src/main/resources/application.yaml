@@ -20,6 +20,28 @@ spring:
         time-between-eviction-runs: 10s
   jackson:
     default-property-inclusion: non_null # JSON处理时忽略非空字段
+    #rabbitmq相关配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+      # 发送端可靠性：开启事务确认(confirm)和退回(return)
+    #确保消息成功到达了 交换机（Exchange）。如果交换机不存在或网络断了，会触发 NACK，这里做重试或记录日志
+    publisher-confirm-type: correlated
+    #确保消息从交换机成功路由到了队列。如果路由失败，消息会被退回，可以在这里做补偿处理
+    publisher-returns: true
+    #告诉 RabbitMQ，路由失败时要把消息退回来
+    template:
+      mandatory: true
+
+      # 消费端：手动 ack（默认是自动确认，必须改成手动，否则代码里的 basicAck 会报错）
+    listener:
+      simple:
+        acknowledge-mode: manual
+        message-converter: Jackson2JsonMessageConverter
+
 mybatis-plus:
   type-aliases-package: com.hmdp.entity # 别名扫描包
 logging:
